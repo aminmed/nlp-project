@@ -6,9 +6,15 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import TweetTokenizer
 import re 
 import string 
+import os 
+import argparse 
+
+
 
 nltk.download('stopwords')
 nltk.download('wordnet')
+
+
 
 def preprocess_text(text):
     # Convert text to lowercase
@@ -53,12 +59,37 @@ def preprocess_text(text):
 
 
 if __name__ == '__main__': 
+
+
+    print("Start preprocessing")
+
     # Load the dataset from a CSV file
-    df = pd.read_csv('quora_question_pairs.csv')
+    
+    parser = argparse.ArgumentParser(description='preprocessing of train and test dataset quora questions pairs detection')
+    parser.add_argument('-r', '--root', type=str, help='path to root folder of data', default = './data')
+
+    args = parser.parse_args() 
+
+
+    path_train = os.path.join(args.root, 'train.csv')
+    path_test = os.path.join(args.root, 'test.csv')
+
+    df_train = pd.read_csv(path_train)
 
     # Apply the preprocessing function to the 'question1' and 'question2' columns
-    df['question1_processed'] = df['question1'].apply(preprocess_text)
-    df['question2_processed'] = df['question2'].apply(preprocess_text)
+    df_train['question1_processed'] = df_train['question1'].apply(preprocess_text)
+    df_train['question2_processed'] = df_train['question2'].apply(preprocess_text)
 
     # Save the preprocessed data to a new CSV file
-    df.to_csv('quora_question_pairs_preprocessed.csv', index=False)
+    df_train.to_csv(os.path.join(args.root, 'train_preprocessed.csv'), index=False)
+
+    df_test = pd.read_csv(path_test)
+
+    # Apply the preprocessing function to the 'question1' and 'question2' columns
+    df_test['question1_processed'] = df_test['question1'].apply(preprocess_text)
+    df_test['question2_processed'] = df_test['question2'].apply(preprocess_text)
+
+    # Save the preprocessed data to a new CSV file
+    df_test.to_csv(os.path.join(args.root, 'test_preprocessed.csv'), index=False)
+
+    print("Done")
