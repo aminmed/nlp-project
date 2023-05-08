@@ -6,19 +6,29 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import TweetTokenizer
 import re 
 import string 
+
+# progress bar ...
+from tqdm import tqdm 
+
+
 import os 
 import argparse 
 
 
-
-nltk.download('stopwords')
-nltk.download('wordnet')
+tqdm.pandas() 
+#nltk.download('stopwords')
+#nltk.download('wordnet')
 
 
 
 def preprocess_text(text):
     # Convert text to lowercase
-    text = text.lower()
+    try:
+        text = text.lower()
+    except :
+        print(text)
+        print(text.dtype)
+        exit
 
     # Remove punctuation
     #text = ''.join(c for c in text if c not in '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~')
@@ -74,20 +84,25 @@ if __name__ == '__main__':
     path_train = os.path.join(args.root, 'train.csv')
     path_test = os.path.join(args.root, 'test.csv')
 
+
+
     df_train = pd.read_csv(path_train)
 
+    df_train.dropna(inplace=True) 
+
     # Apply the preprocessing function to the 'question1' and 'question2' columns
-    df_train['question1_processed'] = df_train['question1'].apply(preprocess_text)
-    df_train['question2_processed'] = df_train['question2'].apply(preprocess_text)
+    df_train['question1_processed'] = df_train['question1'].progress_apply(preprocess_text)
+    df_train['question2_processed'] = df_train['question2'].progress_apply(preprocess_text)
 
     # Save the preprocessed data to a new CSV file
     df_train.to_csv(os.path.join(args.root, 'train_preprocessed.csv'), index=False)
 
     df_test = pd.read_csv(path_test)
 
-    # Apply the preprocessing function to the 'question1' and 'question2' columns
-    df_test['question1_processed'] = df_test['question1'].apply(preprocess_text)
-    df_test['question2_processed'] = df_test['question2'].apply(preprocess_text)
+    df_test.dropna(inplace=True) 
+    # progress_apply the preprocessing function to the 'question1' and 'question2' columns
+    df_test['question1_processed'] = df_test['question1'].progress_apply(preprocess_text)
+    df_test['question2_processed'] = df_test['question2'].progress_apply(preprocess_text)
 
     # Save the preprocessed data to a new CSV file
     df_test.to_csv(os.path.join(args.root, 'test_preprocessed.csv'), index=False)

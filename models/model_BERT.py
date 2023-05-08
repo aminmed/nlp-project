@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.functional as F 
 
 import transformers
-from transformers import BertModel, BertTokenizer, AdamW, get_linear_schedule_with_warmup
+from transformers import BertModel 
 
 class BertModel(nn.Module):
     
