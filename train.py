@@ -8,7 +8,7 @@ import os
 import argparse 
 from dataset import *
 from sklearn.model_selection import train_test_split
-
+import tqdm 
 
 SEED = 1234
 
