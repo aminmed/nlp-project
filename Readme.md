@@ -7,7 +7,7 @@ Our implementation is based on python and it's inspired from this articles:
 
 and these githubs repositories: 
 
-
+## Details of the used approach:
 
 ## Dependencies:
  ````
@@ -15,6 +15,7 @@ and these githubs repositories:
  ```` 
  
 ## Run the code:
+### Preprosseing
 ### How to train ?
 
 	
