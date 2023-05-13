@@ -4,6 +4,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import TweetTokenizer
+import glob 
 import re 
 import string 
 
@@ -81,6 +82,12 @@ if __name__ == '__main__':
     args = parser.parse_args() 
 
 
+    if len(glob.glob(args.root + '/*_preprocessed.csv' )) != 0 :
+
+        print("preprocessed csv files already exists, aborting ...")
+        
+        exit() 
+        
     path_train = os.path.join(args.root, 'train.csv')
     path_test = os.path.join(args.root, 'test.csv')
 

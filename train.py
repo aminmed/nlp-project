@@ -8,7 +8,11 @@ import os
 import argparse 
 from dataset import *
 from sklearn.model_selection import train_test_split
-import tqdm 
+from tqdm import tqdm
+
+import warnings 
+warnings.filterwarnings("ignore", category=DeprecationWarning) 
+
 
 SEED = 1234
 
@@ -46,16 +50,32 @@ def calculate_perplexity(data_loader, model, device):
 
     return np.exp(total_loss / len(data_loader))
 
-def train_loop(epochs, train_data_loader, val_data_loader, model, optimizer, device, scheduler=None):
+def train_loop(
+        epochs,
+        train_data_loader,
+        val_data_loader,
+        model,
+        optimizer,
+        device,
+        scheduler=None,
+        path_to_save_model= './checkpoints'
+    ):
     it = 1
     total_loss = 0
     curr_perplexity = None
     perplexity = None
     
+    epochs_ = tqdm(range(epochs), desc="Epochs")
+    training_progress = tqdm(range(len(train_data_loader)), desc="Training progress")
+
     model.train()
-    for epoch in range(epochs):
-        print('Epoch: ', epoch + 1)
+
+    for epoch in epochs_:
+
+
+
         for batch in train_data_loader:
+
             ids = batch["ids"].to(device, dtype=torch.long)
             mask = batch["mask"].to(device, dtype=torch.long)
             token_type_ids = batch["token_type_ids"].to(device, dtype=torch.long)
@@ -64,7 +84,7 @@ def train_loop(epochs, train_data_loader, val_data_loader, model, optimizer, dev
             optimizer.zero_grad()
             
             # do forward pass, will save intermediate computations of the graph for later backprop use.
-            outputs = model(ids, mask=mask, token_type_ids=token_type_ids)
+            outputs = model(input_ids = ids, attention_mask=mask, token_type_ids=token_type_ids)
             
             loss = loss_fn(outputs, targets)
             total_loss += loss.item()
@@ -87,7 +107,7 @@ def train_loop(epochs, train_data_loader, val_data_loader, model, optimizer, dev
 
                     # making checkpoint of best model weights.
                     if not perplexity or curr_perplexity < perplexity:
-                        torch.save(model.state_dict(), 'saved_model')
+                        torch.save(model.state_dict(), path_to_save_model + 'ep_' + str(epoch))
                         perplexity = curr_perplexity
 
                 print('| Iter', it, '| Avg Train Loss', total_loss / 100, '| Dev Perplexity', curr_perplexity)
@@ -102,10 +122,10 @@ if __name__ == "__main__":
     ROOT_DATA = "./data/"
     BERT_VERSION = 'bert-base-uncased'
     POOLED_OUTPUT_DIM = 768 
-    BATCH_SIZE = 128
-    EPOCHS = 1 
+    BATCH_SIZE = 2
+    EPOCHS = 5
     LR = 3e-5
-
+    PATH_SAVE_MODEL = './checkpoints/' + 'model_' + BERT_VERSION + '_' + str(BATCH_SIZE) + '_'
 
     tokenizer = BertTokenizer.from_pretrained(BERT_VERSION)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -118,7 +138,6 @@ if __name__ == "__main__":
 
     train_data_loader = get_data_loader(
     df=train_df,
-    targets=train_df["is_duplicate"].values,
     batch_size=BATCH_SIZE,
     shuffle=True,
     tokenizer=tokenizer
@@ -126,7 +145,6 @@ if __name__ == "__main__":
 
     val_data_loader = get_data_loader(
     df=val_df,
-    targets=val_df["is_duplicate"].values,
     batch_size=4 * BATCH_SIZE,
     shuffle=True,
     tokenizer=tokenizer
@@ -138,7 +156,8 @@ if __name__ == "__main__":
     mlp_head = MLPHead(
         input_dim=POOLED_OUTPUT_DIM,
         hidden_dim=POOLED_OUTPUT_DIM,
-        output_dim= 1
+        output_dim= 1,
+        dropout_prob = 0.3
     )
     model = BertModel(BERT_VERSION, classification_head = mlp_head).to(device)
 
@@ -151,4 +170,4 @@ if __name__ == "__main__":
     )
     
     
-    train_loop(EPOCHS, train_data_loader, val_data_loader,  model, optimizer, device, scheduler)
+    train_loop(EPOCHS, train_data_loader, val_data_loader,  model, optimizer, device, scheduler, PATH_SAVE_MODEL)
