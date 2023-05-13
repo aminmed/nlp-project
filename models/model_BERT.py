@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 import transformers
 from transformers import BertModel 
+transformers.logging.set_verbosity_error()
 
 class BertModel(nn.Module):
     
@@ -14,12 +15,15 @@ class BertModel(nn.Module):
         self.classification_head = classification_head
 
     def forward(self, input_ids, attention_mask, token_type_ids):
+        
         outputs = self.bert(
             input_ids=input_ids,
             attention_mask=attention_mask,
             token_type_ids=token_type_ids
         )
+
         pooled_output = outputs.pooler_output
+
         logits = self.classification_head(pooled_output)
         return logits
 
@@ -36,4 +40,17 @@ class MLPHead(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.dropout(x)
         x = self.fc2(x)
+        return x
+
+
+class LinearHead(nn.Module):
+    def __init__(self, input_dim, output_dim, dropout_prob):
+        super(LinearHead, self).__init__()
+        self.fc1 = nn.Linear(input_dim, output_dim)
+        self.dropout = nn.Dropout(dropout_prob)
+
+    def forward(self, x):
+
+        x = self.dropout(x)
+        x = self.fc1(x)
         return x

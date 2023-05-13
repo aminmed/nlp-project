@@ -43,7 +43,7 @@ def calculate_perplexity(data_loader, model, device):
             token_type_ids = batch["token_type_ids"].to(device, dtype=torch.long)
             targets = batch["targets"].to(device, dtype=torch.float)
 
-            outputs = model(ids=ids, mask=mask, token_type_ids=token_type_ids)
+            outputs = model(input_ids = ids, attention_mask=mask, token_type_ids=token_type_ids)
             total_loss += loss_fn(outputs, targets).item()
             
     model.train()
@@ -65,16 +65,16 @@ def train_loop(
     curr_perplexity = None
     perplexity = None
     
-    epochs_ = tqdm(range(epochs), desc="Epochs")
-    training_progress = tqdm(range(len(train_data_loader)), desc="Training progress")
-
+    epochs_ = tqdm(range(epochs), desc="Epochs", position=0, leave=True)
+ 
     model.train()
 
     for epoch in epochs_:
 
 
 
-        for batch in train_data_loader:
+        for batch in tqdm(train_data_loader, desc="Training progress", position=0, leave=True):
+
 
             ids = batch["ids"].to(device, dtype=torch.long)
             mask = batch["mask"].to(device, dtype=torch.long)
@@ -110,7 +110,7 @@ def train_loop(
                         torch.save(model.state_dict(), path_to_save_model + 'ep_' + str(epoch))
                         perplexity = curr_perplexity
 
-                print('| Iter', it, '| Avg Train Loss', total_loss / 100, '| Dev Perplexity', curr_perplexity)
+                print('\n | Iter', it, '| Avg Train Loss', total_loss / 100, '| Dev Perplexity', curr_perplexity)
                 total_loss = 0
 
             it += 1
@@ -123,7 +123,7 @@ if __name__ == "__main__":
     BERT_VERSION = 'bert-base-uncased'
     POOLED_OUTPUT_DIM = 768 
     BATCH_SIZE = 2
-    EPOCHS = 5
+    EPOCHS = 10
     LR = 3e-5
     PATH_SAVE_MODEL = './checkpoints/' + 'model_' + BERT_VERSION + '_' + str(BATCH_SIZE) + '_'
 
@@ -153,13 +153,19 @@ if __name__ == "__main__":
     # Training : 
 
     
-    mlp_head = MLPHead(
+    # mlp_head = MLPHead(
+    #     input_dim=POOLED_OUTPUT_DIM,
+    #     hidden_dim=POOLED_OUTPUT_DIM // 4,
+    #     output_dim= 1,
+    #     dropout_prob = 0.3
+    # )
+
+    linear_head = LinearHead(
         input_dim=POOLED_OUTPUT_DIM,
-        hidden_dim=POOLED_OUTPUT_DIM,
-        output_dim= 1,
+        output_dim = 1, 
         dropout_prob = 0.3
     )
-    model = BertModel(BERT_VERSION, classification_head = mlp_head).to(device)
+    model = BertModel(BERT_VERSION, classification_head = linear_head).to(device)
 
     num_training_steps = int(len(train_data_loader) * EPOCHS)
     optimizer = AdamW(model.parameters(), lr=LR)
