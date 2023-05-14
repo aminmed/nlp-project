@@ -3,11 +3,58 @@ import pandas as pd
 import torch 
 import torch.nn as nn 
 
+from nltk.corpus import stopwords
+from sklearn.preprocessing import normalize
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+import sys
+import scipy
+from scipy.sparse import hstack
+import os , pickle
+
 
 from dataset import  get_data_loader 
 from tqdm import tqdm 
 
-max_features = 120000 # how many unique words to use (i.e num rows in embedding vector) 
+MAX_FEATURES = 20000 # how many unique words to use (i.e num rows in embedding vector) 
+
+
+
+def get_TFIDF_vectorization(data : pd.DataFrame):
+
+    df = data.copy()
+
+    #changing columns to numeric type
+    num_cols = df.drop(columns=['id', 'qid1', 'qid2', 'question1', 'question2']).columns
+
+    for col in num_cols:
+        df[col] = df[col].apply(pd.to_numeric)
+    
+    # drop non-features columns
+    to_drop_columns = ['id', 'qid1', 'qid2','is_duplicate']
+    y = df['is_duplicate'] 
+    X = df[df.drop(columns=to_drop_columns).columns.tolist()]
+
+    # TFIDF computation for both question1 and question2
+    
+    tfidf_vectorizer_q1 = TfidfVectorizer(lowercase=False, max_features= MAX_FEATURES)
+    q1_ifidf = tfidf_vectorizer_q1.fit_transform(X['question1'])
+
+    tfidf_vectorizer_2 = TfidfVectorizer(lowercase=False,max_features= MAX_FEATURES)
+    q2_ifidf = tfidf_vectorizer_2.fit_transform(X['question2'])
+
+    tfidf_vec = hstack((q1_ifidf,q2_ifidf))
+
+    df_X = X.drop(columns=['question1', 'question2'])
+
+    
+    df_X_sparse = scipy.sparse.csr_matrix(df_X)
+
+    df = hstack((df_X_sparse,tfidf_vec))
+
+    pickle.dump(df, open("./data/tfidf_X_tr","wb"))
+
 
 
 def load_glove(word_index, embedding_file_path = '../embeddings/glove.840B.300d/glove.840B.300d.txt' ):
@@ -32,12 +79,12 @@ def load_glove(word_index, embedding_file_path = '../embeddings/glove.840B.300d/
     emb_mean,emb_std = -0.005838499,0.48782197
     embed_size = all_embs.shape[1]
 
-    nb_words = min(max_features, len(word_index))
+    nb_words = min(MAX_FEATURES, len(word_index))
 
     embedding_matrix = np.random.normal(emb_mean, emb_std, (nb_words, embed_size))
 
     for word, i in word_index.items():
-        if i >= max_features: continue
+        if i >= MAX_FEATURES: continue
         embedding_vector = embeddings_index.get(word)
         if embedding_vector is not None: embedding_matrix[i] = embedding_vector
             
@@ -68,11 +115,11 @@ def load_fasttext(word_index, embedding_file_path = '../embeddings/wiki-news-300
     embed_size = all_embs.shape[1]
 
     # word_index = tokenizer.word_index
-    nb_words = min(max_features, len(word_index))
+    nb_words = min(MAX_FEATURES, len(word_index))
     embedding_matrix = np.random.normal(emb_mean, emb_std, (nb_words, embed_size))
     #embedding_matrix = np.random.normal(emb_mean, 0, (nb_words, embed_size))
     for word, i in word_index.items():
-        if i >= max_features: continue
+        if i >= MAX_FEATURES: continue
         embedding_vector = embeddings_index.get(word)
         if embedding_vector is not None: embedding_matrix[i] = embedding_vector
 
@@ -103,11 +150,11 @@ def load_para(word_index, embedding_file_path = '../embeddings/paragram_300_sl99
     embed_size = all_embs.shape[1]
 
 
-    nb_words = min(max_features, len(word_index))
+    nb_words = min(MAX_FEATURES, len(word_index))
     embedding_matrix = np.random.normal(emb_mean, emb_std, (nb_words, embed_size))
 
     for word, i in word_index.items():
-        if i >= max_features: continue
+        if i >= MAX_FEATURES: continue
         embedding_vector = embeddings_index.get(word)
         if embedding_vector is not None: embedding_matrix[i] = embedding_vector
     
@@ -115,53 +162,3 @@ def load_para(word_index, embedding_file_path = '../embeddings/paragram_300_sl99
 
 
 
-# this function returns probabilities for every test case.
-def test(model, test_df, tokenizer,  device):
-    predictions = torch.empty(0).to(device, dtype=torch.float)
-    
-
-    test_data_loader = get_data_loader(
-        df = test_df, 
-        batch_size= 512, 
-        tokenizer=tokenizer
-    )
-    
-    with torch.no_grad():
-        model.eval()
-        for batch in tqdm(test_data_loader):
-            ids = batch["ids"]
-            mask = batch["mask"]
-            token_type_ids = batch["token_type_ids"]
-
-            ids = ids.to(device, dtype=torch.long)
-            mask = mask.to(device, dtype=torch.long)
-            token_type_ids = token_type_ids.to(device, dtype=torch.long)
-
-            outputs = model(ids=ids, attention_mask=mask, token_type_ids=token_type_ids)
-            predictions = torch.cat((predictions, nn.Sigmoid()(outputs)))
-    
-    return predictions.cpu().numpy().squeeze()
-
-
-
-
-def eval(model, tokenizer, first_question, second_question, device):
-    
-    inputs = tokenizer.encode_plus(
-        first_question,
-        second_question,
-        add_special_tokens=True,
-    )
-
-    ids = torch.tensor([inputs["input_ids"]], dtype=torch.long).to(device, dtype=torch.long)
-    mask = torch.tensor([inputs["attention_mask"]], dtype=torch.long).to(device, dtype=torch.long)
-    token_type_ids = torch.tensor([inputs["token_type_ids"]], dtype=torch.long).to(device, dtype=torch.long)
-
-    with torch.no_grad():
-        model.eval()
-        output = model(ids=ids, mask=mask, token_type_ids=token_type_ids)
-        prob = nn.Sigmoid()(output).item()
-
-        print("questions [{}] and [{}] are {} with score {}".format(first_question, second_question, 'similar' if prob > 0.5 else 'not similar', prob))
-
-        

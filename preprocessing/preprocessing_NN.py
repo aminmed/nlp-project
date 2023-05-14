@@ -24,12 +24,9 @@ tqdm.pandas()
 
 def preprocess_text(text):
     # Convert text to lowercase
-    try:
-        text = text.lower()
-    except :
-        print(text)
-        print(text.dtype)
-        exit
+
+    text = text.lower()
+
 
     # Remove punctuation
     #text = ''.join(c for c in text if c not in '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~')
@@ -72,7 +69,7 @@ def preprocess_text(text):
 if __name__ == '__main__': 
 
 
-    print("Start preprocessing")
+    print("Start preprocessing for BERT embeddings")
 
     # Load the dataset from a CSV file
     
@@ -82,7 +79,7 @@ if __name__ == '__main__':
     args = parser.parse_args() 
 
 
-    if len(glob.glob(args.root + '/*_preprocessed.csv' )) != 0 :
+    if len(glob.glob(args.root + '/*_NN_preprocessed.csv' )) != 0 :
 
         print("preprocessed csv files already exists, aborting ...")
         
@@ -96,22 +93,23 @@ if __name__ == '__main__':
     df_train = pd.read_csv(path_train)
 
     df_train.dropna(inplace=True) 
-
+    print("Preprocessing and extracting features for training dataset")
     # Apply the preprocessing function to the 'question1' and 'question2' columns
     df_train['question1_processed'] = df_train['question1'].progress_apply(preprocess_text)
     df_train['question2_processed'] = df_train['question2'].progress_apply(preprocess_text)
 
     # Save the preprocessed data to a new CSV file
-    df_train.to_csv(os.path.join(args.root, 'train_preprocessed.csv'), index=False)
+    df_train.to_csv(os.path.join(args.root, 'train_NN_preprocessed.csv'), index=False)
 
     df_test = pd.read_csv(path_test)
 
     df_test.dropna(inplace=True) 
+    print("Preprocessing and extracting features for testing dataset")
     # progress_apply the preprocessing function to the 'question1' and 'question2' columns
     df_test['question1_processed'] = df_test['question1'].progress_apply(preprocess_text)
     df_test['question2_processed'] = df_test['question2'].progress_apply(preprocess_text)
 
     # Save the preprocessed data to a new CSV file
-    df_test.to_csv(os.path.join(args.root, 'test_preprocessed.csv'), index=False)
+    df_test.to_csv(os.path.join(args.root, 'test_NN_preprocessed.csv'), index=False)
 
     print("Done")

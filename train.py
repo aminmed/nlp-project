@@ -122,7 +122,7 @@ if __name__ == "__main__":
     ROOT_DATA = "./data/"
     BERT_VERSION = 'bert-base-uncased'
     POOLED_OUTPUT_DIM = 768 
-    BATCH_SIZE = 2
+    BATCH_SIZE = 128
     EPOCHS = 10
     LR = 3e-5
     PATH_SAVE_MODEL = './checkpoints/' + 'model_' + BERT_VERSION + '_' + str(BATCH_SIZE) + '_'
