@@ -1,5 +1,3 @@
-
-
 import torch
 import xgboost as xgb
 import numpy as np
@@ -14,8 +12,6 @@ class EnsembleModel:
         self.xgb_model = xgb.Booster()
         self.xgb_model.load_model(xgb_model_path)
 
-    def forward(self, input):
-        pass 
     
 
     def predict(self, X):
