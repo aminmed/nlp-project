@@ -8,11 +8,25 @@ transformers.logging.set_verbosity_error()
 
 class BertModel(nn.Module):
     
-    def __init__(self, bert_path, classification_head):
+    def __init__(self, bert_path, dropout_prob ,pooled_ouput_dim = 768,mlp_head = True):
         super(BertModel, self).__init__()
+        
         self.bert_path = bert_path
+        self.mlp_head = mlp_head
+        self.dropout_prob = dropout_prob 
+        self.pooled_ouput_dim = pooled_ouput_dim 
         self.bert = transformers.BertModel.from_pretrained(self.bert_path)
-        self.classification_head = classification_head
+
+        if mlp_head : 
+            
+            self.fc1 = nn.Linear(self.pooled_ouput_dim, self.pooled_ouput_dim // 4)
+            self.fc2 = nn.Linear(self.pooled_ouput_dim // 4, 1)
+            self.dropout = nn.Dropout(self.dropout_prob)
+        
+        else : 
+            self.fc1 = nn.Linear(self.pooled_ouput_dim, 1)
+            self.dropout = nn.Dropout(self.dropout_prob)
+
 
     def forward(self, input_ids, attention_mask, token_type_ids):
         
@@ -24,8 +38,17 @@ class BertModel(nn.Module):
 
         pooled_output = outputs.pooler_output
 
-        logits = self.classification_head(pooled_output)
-        return logits
+        if self.classification_head : 
+
+            x = F.relu(self.fc1(pooled_output))
+            x = self.dropout(x)
+            x = self.fc2(x)
+
+        else : 
+            x = self.dropout(x)
+            x = self.fc1(x)
+        
+        return x
 
 
 

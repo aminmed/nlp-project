@@ -133,6 +133,9 @@ if __name__ == "__main__":
     BATCH_SIZE        = config.getint('Hyperparameters', 'BATCH_SIZE')
     EPOCHS            = config.getint('Hyperparameters', 'EPOCHS')
     LR                = config.getfloat('Hyperparameters', 'LR')
+    DROPOUT           = config.getfloat('Hyperparameters', 'DROPOUT')
+    MLP_HEAD          = config.getboolean('Hyperparameters', 'MLP_HEAD')
+
     PATH_SAVE_MODEL   = './checkpoints/' + 'model_' + BERT_VERSION + '_' + str(BATCH_SIZE) + '_'
 
 
@@ -162,19 +165,13 @@ if __name__ == "__main__":
     # Training : 
 
     
-    # mlp_head = MLPHead(
-    #     input_dim=POOLED_OUTPUT_DIM,
-    #     hidden_dim=POOLED_OUTPUT_DIM // 4,
-    #     output_dim= 1,
-    #     dropout_prob = 0.3
-    # )
 
-    linear_head = LinearHead(
-        input_dim=POOLED_OUTPUT_DIM,
-        output_dim = 1, 
-        dropout_prob = 0.3
-    )
-    model = BertModel(BERT_VERSION, classification_head = linear_head).to(device)
+    model = BertModel(
+        BERT_VERSION,
+        dropout_prob = DROPOUT,
+        pooled_ouput_dim = POOLED_OUTPUT_DIM, 
+        mlp_head = MLP_HEAD
+    ).to(device)
 
     num_training_steps = int(len(train_data_loader) * EPOCHS)
     optimizer = AdamW(model.parameters(), lr=LR, no_deprecation_warning=True)

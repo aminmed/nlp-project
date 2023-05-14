@@ -29,7 +29,7 @@ conda install --file requirements.txt
 Using pip commands 
 
 ````
-!pip install transformers, nltk, tokenizers, spacy, fuzzywuzzy, distance, python-levenshtein
+!pip install transformers, nltk, tokenizers, spacy, fuzzywuzzy, distance, python-levenshtein, prettytable
 
 !python -m spacy download en_core_web_sm
 
@@ -53,8 +53,8 @@ data/
 #to apply TFIDF Weighted Glove Vectors 
 #otherwise apply only TFIDF vetorization
 
-python .\preprocessing\preprocessing_ML.py --root ./data/ -g
-python .\preprocessing\preprocessing_ML.py --root ./data/
+python ./preprocessing/preprocessing_ML.py --root ./data/ -g
+python ./preprocessing/preprocessing_ML.py --root ./data/
 ````
 The output will be in data folder with the fowllowing structure : 
 
@@ -70,7 +70,7 @@ data/
 ##### Preprocessing for BertModel 
 
 ````
-python .\preprocessing\preprocessing_NN.py --root ./data/ 
+python ./preprocessing/preprocessing_NN.py --root ./data/ 
 
 ````
 The output will be in data folder with the fowllowing structure :  
@@ -90,7 +90,7 @@ Train the model by executing the training code. This will train the model using 
 to train the model that use BERT embeddings, run the following :
 
 ````
-python train.py --config .\configs\config.ini
+python train.py --config ./configs/config.ini
 ````
 
 the configs folder containes files of configs where you can set hyperparameters and paths to data ...
@@ -106,7 +106,7 @@ Test the trained model on new question pairs by running the testing code. This w
  ````
 
  ````
- 
+
 ## Results
 Our approach achieves promising results in the task of quora question pair similarity. The model achieves high accuracy and demonstrates good performance across various evaluation metrics. In the following, the detailed results in term of log loss: 
 | ML Model | Vectorizer | Train log loss | Test log loss |
