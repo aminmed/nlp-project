@@ -37,6 +37,8 @@ Using pip commands
  
 ## Run the code:
 To use our implementation, follow these steps:
+### Data Exploration:
+To discover the dataset, simply run the notebook ./notebooks/Exploratory Data Analysis.ipynb. 
 ### Preprocessing 
 Preprocess the raw question pairs by running the preprocessing code. This will transform the questions into a suitable format for feature extraction and model training. make sure your ./data folder looks like this : 
 
@@ -112,7 +114,9 @@ Our approach achieves promising results in the task of quora question pair simil
 | ML Model | Vectorizer | Train log loss | Test log loss |
 | --- | --- | --- | --- |
 | XGBoost | TF-IDF w2v | 0.21667200942242115 | 0.31909646297475824 |
-| BERT | TF-IDF w2v | 0.21667200942242115 | 0.31909646297475824 |
+| Linear SVM | TF-IDF w2v |  0.387343333576651  |  0.392458437620356  |
+| Logistic Regression | TF-IDF w2v | 0.3843258293183725 |  0.3903866097213397 |
+| BERT |   | 0.21667200942242115 | 0.31909646297475824 |
 ## Contributors :
   - DJECTA Hibat_Errahmen
   - BENCHEIKH LEHOCINE Mohammed Amine
