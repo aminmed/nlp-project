@@ -26,6 +26,11 @@ Our approach involves preprocessing the question pairs, extracting features, dev
 ### How to test ?
 
 ## Results
+Our approach achieves promising results in the task of quora question pair similarity. The model achieves high accuracy and demonstrates good performance across various evaluation metrics. In the following, the detailed results in term of log loss: 
+| ML Model | Vectorizer | Train log loss | Test log loss |
+| --- | --- | --- | --- |
+| XGBoost | TF-IDF w2v | 0.21667200942242115 | 0.31909646297475824 |
+| BERT | TF-IDF w2v | 0.21667200942242115 | 0.31909646297475824 |
 ## Contributors :
   - BAZ Roland
 
