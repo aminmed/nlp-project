@@ -18,13 +18,14 @@ Our approach involves preprocessing the question pairs, extracting features, dev
  ```` 
  
 ## Run the code:
+To use our implementation, follow these steps:
 ### Preprosseing
+Preprocess the raw question pairs by running the preprocessing code. This will transform the questions into a suitable format for feature extraction and model training.
 ### How to train ?
-
-	
+Train the model by executing the training code. This will train the model using the preprocessed data and the defined model architecture.
 
 ### How to test ?
-
+Test the trained model on new question pairs by running the testing code. This will provide predictions on the similarity of the question pairs based on the trained model.
 ## Results
 Our approach achieves promising results in the task of quora question pair similarity. The model achieves high accuracy and demonstrates good performance across various evaluation metrics. In the following, the detailed results in term of log loss: 
 | ML Model | Vectorizer | Train log loss | Test log loss |
