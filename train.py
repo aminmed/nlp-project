@@ -143,7 +143,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     ### train and validation data loaders 
-    train_df = pd.read_csv(os.path.join(ROOT_DATA , 'train.csv'))
+    train_df = pd.read_csv(os.path.join(ROOT_DATA , 'train.csv')).sample(10000)
     train_df, val_df = train_test_split(train_df, test_size=0.1)
     train_df = train_df.reset_index(drop=True)
     val_df = val_df.reset_index(drop=True)

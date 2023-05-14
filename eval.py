@@ -6,6 +6,7 @@ import torch.nn as nn
 from dataset import get_data_loader
 from tqdm import tqdm 
 from transformers import  BertTokenizer
+import xgboost as xgb
 
 import os 
 import argparse
@@ -23,17 +24,19 @@ from sklearn.metrics import (
 
 def loss_fn(outputs, targets):
     outputs = torch.squeeze(outputs)
+    targets = torch.squeeze(targets)
     return nn.BCELoss()(nn.Sigmoid()(outputs), targets) 
 
 
 def test(model, test_df, tokenizer,  device):
-    predictions = torch.empty(0).to(device, dtype=torch.float)
     
+    predictions = torch.empty(0).to(device, dtype=torch.float)
 
     test_data_loader = get_data_loader(
         df = test_df, 
         batch_size= 512, 
-        tokenizer=tokenizer
+        tokenizer=tokenizer,
+        shuffle = False
     )
     
     with torch.no_grad():
@@ -46,8 +49,9 @@ def test(model, test_df, tokenizer,  device):
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
             token_type_ids = token_type_ids.to(device, dtype=torch.long)
-
+  
             outputs = model(input_ids=ids, attention_mask=mask, token_type_ids=token_type_ids)
+
             predictions = torch.cat((predictions, nn.Sigmoid()(outputs)))
     
     return predictions.cpu().numpy().squeeze()
@@ -101,9 +105,8 @@ if __name__ == "__main__":
     CHECKPOINT  = config.get('Hyperparameters', 'CHECKPOINT')
 
     device      = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
+    y = None 
 
-    df = pd.read_csv(os.path.join(ROOT_DATA , 'test_preprocessed.csv'))
-    y = df['is_duplicate']
 
 
     if args.model == 'bert' : 
@@ -113,18 +116,41 @@ if __name__ == "__main__":
         dropout           = config.getfloat('Hyperparameters', 'DROPOUT')
         mlp_head          = config.getboolean('Hyperparameters', 'MLP_HEAD')
 
+        print("validation data loading")
+        df = pd.read_csv(os.path.join(ROOT_DATA , 'train_preprocessed.csv'))
+        y = df['is_duplicate']
+        print("data loading done.")
 
         tokenizer         = BertTokenizer.from_pretrained(BERT_VERSION)
         model = BertModel(BERT_VERSION,dropout,pooled_output_dim, mlp_head  )
-        model.load_state_dict(torch.load(CHECKPOINT))
+        model.load_state_dict(torch.load(CHECKPOINT,  map_location=device))
         predictions = test(model=model, test_df = df, tokenizer=tokenizer, device= device )
 
 
+    elif args.model == "xgboost":
+
+        print("validation data loading")
+        df = pd.read_csv(os.path.join(ROOT_DATA , 'xgboost_test.csv'))
+        df.drop(columns=['q1_glove', 'q2_glove'], axis = 1, inplace=True)
+        y = pd.read_csv(os.path.join(ROOT_DATA , 'xgboost_y_test.csv'))
+        xgb_inputs = xgb.DMatrix(df)
+        print("data loading done.")
+        # Blank new instance to be loaded into
+        xgboost_model = xgb.Booster()
+        xgboost_model.load_model("./checkpoints/xgboost/model.json")
+        predictions = xgboost_model.predict(xgb_inputs)
+        predictions = torch.tensor(predictions, dtype=torch.float)
+
     else : 
-        raise NotImplementedError("Only bert evaluation is implemented !!")
-    
+        raise NotImplementedError("Only bert and xgboost evaluation   is implemented !!")
+
+    y = torch.tensor(y.values, dtype=torch.float) 
 
     log_loss  = loss_fn(predictions, y) 
+
+    predictions = torch.where(predictions >= 0.5, 1, 0).type(torch.long)
+    y = y.type(torch.long)
+
     accuracy  = accuracy_score(y, predictions)
     precision = precision_score(y, predictions)
     recall    = recall_score(y, predictions)
@@ -135,7 +161,7 @@ if __name__ == "__main__":
     
     x.field_names = ["Metric ", "Value"]
 
-    x.add_row(["Log loss",  log_loss ])
+    x.add_row(["Log loss",  log_loss.item() ])
     x.add_row(["Accuracy", accuracy ])
     x.add_row(["Recall", recall])
     x.add_row(["Precision", precision])

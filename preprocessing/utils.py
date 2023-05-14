@@ -132,7 +132,7 @@ def get_TFIDF_GLOVE_vectorization(data : pd.DataFrame):
 
     df_glove_q2 = vecs2
 
-    X['q1_glove'], X['q2_glove'] = df_glove_q1, df_glove_q2
+    #X['q1_glove'], X['q2_glove'] = df_glove_q1, df_glove_q2
 
     np_glove = np.concatenate([np.array(df_glove_q1),np.array(df_glove_q2)],axis=1)
     
