@@ -8,6 +8,7 @@ from scipy.sparse import hstack
 from fuzzywuzzy import fuzz
 import spacy
 import distance
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 
@@ -19,7 +20,7 @@ from tqdm import tqdm
 
 MAX_FEATURES = 20000 # how many unique words to use (i.e num rows in embedding vector) 
 
-
+nltk.download('stopwords')
 
 def get_TFIDF_vectorization(data : pd.DataFrame):
 
@@ -204,8 +205,12 @@ def get_longest_substr_ratio(a, b):
 
 def get_token_features(q1, q2):
     
-    token_features = [0.0]*10
+
+
     STOP_WORDS = set(stopwords.words('english'))
+
+    token_features = [0.0]*10
+
     # Converting the Sentence into Tokens: 
     q1_tokens = q1.split()
     q2_tokens = q2.split()

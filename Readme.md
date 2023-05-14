@@ -12,9 +12,31 @@ and these githubs repositories:
 ## Details of the used approach:
 Our approach involves preprocessing the question pairs, extracting features, developing a BERT-based model for similarity prediction as well as a classical machine learning model, evaluating its performance using metrics, and iteratively improving the model based on error analysis. More details in the report joined to this repository.
 
-## Dependencies:
- ````
- numpy, nltk, pandas, transformers, pytorch, sklearn 
+## Installing dependencies:
+
+#### Conda envs : 
+
+````
+#Create a conda environment
+conda create --name <environment-name> python=3.8.* 
+#Activate the created conda environment
+conda activate <environment-name>
+#install dependencies from requirements.txt 
+conda install --file requirements.txt
+
+ ```` 
+#### Other (colab / pyenv ...) : 
+Using pip commands 
+
+````
+!pip install transformers
+!pip install nltk 
+!pip install tokenizers
+!pip install spacy 
+!pip install fuzzywuzzy
+!pip install distance 
+!pip install python-levenshtein
+!python -m spacy download en_core_web_sm
  ```` 
  
 ## Run the code:
