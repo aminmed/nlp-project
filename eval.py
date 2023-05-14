@@ -8,24 +8,20 @@ from tqdm import tqdm
 from transformers import  BertTokenizer
 import xgboost as xgb
 
-import os 
+import os , pickle
 import argparse
 import configparser
 from models import * 
 from prettytable import PrettyTable
 
+
 from sklearn.metrics import (
-    confusion_matrix,
     accuracy_score,
     precision_score,
     recall_score,
-    f1_score
+    f1_score,
+    log_loss
 )
-
-def loss_fn(outputs, targets):
-    outputs = torch.squeeze(outputs)
-    targets = torch.squeeze(targets)
-    return nn.BCELoss()(nn.Sigmoid()(outputs), targets) 
 
 
 def test(model, test_df, tokenizer,  device):
@@ -130,9 +126,9 @@ if __name__ == "__main__":
     elif args.model == "xgboost":
 
         print("validation data loading")
-        df = pd.read_csv(os.path.join(ROOT_DATA , 'xgboost_test.csv'))
+        df = pd.read_csv(os.path.join(ROOT_DATA , 'train_data.csv'))
         df.drop(columns=['q1_glove', 'q2_glove'], axis = 1, inplace=True)
-        y = pd.read_csv(os.path.join(ROOT_DATA , 'xgboost_y_test.csv'))
+        y = pd.read_csv(os.path.join(ROOT_DATA , 'train_y.csv'))
         xgb_inputs = xgb.DMatrix(df)
         print("data loading done.")
         # Blank new instance to be loaded into
@@ -146,7 +142,7 @@ if __name__ == "__main__":
 
     y = torch.tensor(y.values, dtype=torch.float) 
 
-    log_loss  = loss_fn(predictions, y) 
+    log_loss  = log_loss(y, predictions) 
 
     predictions = torch.where(predictions >= 0.5, 1, 0).type(torch.long)
     y = y.type(torch.long)
