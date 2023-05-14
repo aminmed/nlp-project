@@ -114,11 +114,12 @@ Our approach achieves promising results in the task of quora question pair simil
 | XGBoost | TF-IDF w2v | 0.21667200942242115 | 0.31909646297475824 |
 | BERT | TF-IDF w2v | 0.21667200942242115 | 0.31909646297475824 |
 ## Contributors :
+  - DJECTA Hibat_Errahmen
+  - BENCHEIKH LEHOCINE Mohammed Amine
   - BAZ Roland
 
-  - BENCHEIKH LEHOCINE Mohammed Amine
+
   
-  - DJECTA Hibat_Errahmen
 
   
 

@@ -1,1 +1,10 @@
-./data/*
+
+# Ignore what inside the data directory
+data/*
+
+# Ignore the __pycache__ directory
+__pycache__/
+
+# Ignore what inside the checkpoints directory
+checkpoints/
+

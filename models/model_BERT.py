@@ -45,7 +45,7 @@ class BertModel(nn.Module):
             x = self.fc2(x)
 
         else : 
-            x = self.dropout(x)
+            x = self.dropout(pooled_output)
             x = self.fc1(x)
         
         return x
