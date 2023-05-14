@@ -25,18 +25,14 @@ conda activate <environment-name>
 conda install --file requirements.txt
 
  ```` 
-#### Other (colab / pyenv ...) : 
+#### Other (colab) : 
 Using pip commands 
 
 ````
-!pip install transformers
-!pip install nltk 
-!pip install tokenizers
-!pip install spacy 
-!pip install fuzzywuzzy
-!pip install distance 
-!pip install python-levenshtein
+!pip install transformers, nltk, tokenizers, spacy, fuzzywuzzy, distance, python-levenshtein
+
 !python -m spacy download en_core_web_sm
+
  ```` 
  
 ## Run the code:
