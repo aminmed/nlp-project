@@ -38,7 +38,7 @@ class BertModel(nn.Module):
 
         pooled_output = outputs.pooler_output
 
-        if self.classification_head : 
+        if self.mlp_head : 
 
             x = F.relu(self.fc1(pooled_output))
             x = self.dropout(x)
