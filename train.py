@@ -6,6 +6,7 @@ import pandas as pd
 from transformers import  BertTokenizer, AdamW, get_linear_schedule_with_warmup
 import os 
 import argparse 
+import configparser
 from dataset import *
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
@@ -118,14 +119,22 @@ def train_loop(
 
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='preprocessing of train and test dataset quora questions pairs detection')
+    parser.add_argument('-c', '--configs', type=str, help='path to config file (hyper parameters)', default = './configs/config.ini')
+
+    args = parser.parse_args() 
+    config = configparser.ConfigParser()
+    config.read(args.configs)
     
-    ROOT_DATA = "./data/"
-    BERT_VERSION = 'bert-base-uncased'
-    POOLED_OUTPUT_DIM = 768 
-    BATCH_SIZE = 128
-    EPOCHS = 10
-    LR = 3e-5
-    PATH_SAVE_MODEL = './checkpoints/' + 'model_' + BERT_VERSION + '_' + str(BATCH_SIZE) + '_'
+    ROOT_DATA         = config.get('Hyperparameters', 'ROOT_DATA')
+    BERT_VERSION      = config.get('Hyperparameters', 'BERT_VERSION')
+    POOLED_OUTPUT_DIM = config.getint('Hyperparameters', 'POOLED_OUTPUT_DIM')
+    BATCH_SIZE        = config.getint('Hyperparameters', 'BATCH_SIZE')
+    EPOCHS            = config.getint('Hyperparameters', 'EPOCHS')
+    LR                = config.getfloat('Hyperparameters', 'LR')
+    PATH_SAVE_MODEL   = './checkpoints/' + 'model_' + BERT_VERSION + '_' + str(BATCH_SIZE) + '_'
+
 
     tokenizer = BertTokenizer.from_pretrained(BERT_VERSION)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -168,7 +177,7 @@ if __name__ == "__main__":
     model = BertModel(BERT_VERSION, classification_head = linear_head).to(device)
 
     num_training_steps = int(len(train_data_loader) * EPOCHS)
-    optimizer = AdamW(model.parameters(), lr=LR)
+    optimizer = AdamW(model.parameters(), lr=LR, no_deprecation_warning=True)
     scheduler = get_linear_schedule_with_warmup(
         optimizer,
         num_warmup_steps=0,
