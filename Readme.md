@@ -10,7 +10,7 @@ and these githubs repositories:
 - https://github.com/YuriyGuts/kaggle-quora-question-pairs
 
 ## Details of the used approach:
-Our approach involves preprocessing the question pairs, extracting features, developing a BERT-based model for similarity prediction as well as a classical machine learning model, evaluating its performance using metrics, and iteratively improving the model based on error analysis.
+Our approach involves preprocessing the question pairs, extracting features, developing a BERT-based model for similarity prediction as well as a classical machine learning model, evaluating its performance using metrics, and iteratively improving the model based on error analysis. More details in the report joined to this repository.
 
 ## Dependencies:
  ````
