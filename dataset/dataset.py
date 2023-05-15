@@ -10,7 +10,10 @@ class QuoraDataset(Dataset):
         self.tokenizer = tokenizer
         self.data = data
         self.max_len = max_len
-        self.targets = data['is_duplicate'].values
+        try:
+            self.targets = data['is_duplicate'].values
+        except :
+            self.targets =  None 
 
     def __len__(self):
         return len(self.data)
@@ -18,7 +21,11 @@ class QuoraDataset(Dataset):
     def __getitem__(self, index):
         question1 = str(self.data.iloc[index]['question1'])
         question2 = str(self.data.iloc[index]['question2'])
-        label = self.data.iloc[index]['is_duplicate']
+        
+        if self.targets is not None : 
+            label = self.data.iloc[index]['is_duplicate']
+        else :
+            label = None 
         
        ### [CLS] question1 [SEP] questions2 [SEP] ... [PAD]
         inputs = self.tokenizer.encode_plus(

@@ -97,7 +97,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config = configparser.ConfigParser()
     config.read(args.configs)
-    ROOT_DATA   = config.get('Hyperparameters', 'ROOT_DATA')
+    PATH_DATA   = config.get('Hyperparameters', 'PATH_DATA')
     CHECKPOINT  = config.get('Hyperparameters', 'CHECKPOINT')
 
     device      = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
         print("data loading done.")
 
         tokenizer         = BertTokenizer.from_pretrained(BERT_VERSION)
-        model = BertModel(BERT_VERSION,dropout,pooled_output_dim, mlp_head  )
+        model = BertModel(BERT_VERSION,dropout,pooled_output_dim, mlp_head  ).to(device)
         model.load_state_dict(torch.load(CHECKPOINT,  map_location=device))
         predictions = test(model=model, test_df = df, tokenizer=tokenizer, device= device )
 
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     elif args.model == "xgboost":
 
         print("validation data loading")
-        df = pd.read_csv(os.path.join(ROOT_DATA , 'train_data.csv'))
+        df = pd.read_csv(os.path.join(PATH_DATA))
         df.drop(columns=['q1_glove', 'q2_glove'], axis = 1, inplace=True)
         y = pd.read_csv(os.path.join(ROOT_DATA , 'train_y.csv'))
         xgb_inputs = xgb.DMatrix(df)

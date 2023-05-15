@@ -104,8 +104,9 @@ Make sure you have already run preprocessing for ML models.
 
 
 ### How to test ?
-Test the trained model on new question pairs by running the testing code. This will provide predictions on the similarity of the question pairs based on the trained model.
+Test the trained model on new question pairs by running the testing code. This will provide predictions on the similarity of the question pairs based on the trained model. to evaluate the trained models, edit the config file in ./configs (example : ./configs/bert_test_config.ini) than run the following command : 
  ````
+ python eval.py --configs ./configs/bert_test_config.ini --model bert
 
  ````
 
@@ -115,8 +116,8 @@ Our approach achieves promising results in the task of quora question pair simil
 | --- | --- | --- | --- |
 | XGBoost | TF-IDF w2v | 0.21667200942242115 | 0.31909646297475824 |
 | Linear SVM | TF-IDF w2v |  0.387343333576651  |  0.392458437620356  |
-| Logistic Regression | TF-IDF w2v | 0.3843258293183725 |  0.3903866097213397 |
-| BERT |   | 0.21667200942242115 | 0.31909646297475824 |
+| Logistic Regression | -- | 0.3843258293183725 |  0.3903866097213397 |
+| BERT |   | 0.13857800014 | 0.29412056 |
 ## Contributors :
   - DJECTA Hibat_Errahmen
   - BENCHEIKH LEHOCINE Mohammed Amine
