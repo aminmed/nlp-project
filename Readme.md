@@ -114,7 +114,6 @@ Test the trained model on new question pairs by running the testing code. This w
 Our approach achieves promising results in the task of quora question pair similarity. The model achieves high accuracy and demonstrates good performance across various evaluation metrics. In the following, the detailed results in term of log loss: 
 | ML Model | Vectorizer | Train log loss | Test log loss |
 | --- | --- | --- | --- |
-
 | Finetuned BERT |   --   | 0.13857 | 0.20404 |
 | XGBoost | TF-IDF w2v | 0.21667 | 0.31909 |
 | Linear SVM | TF-IDF w2v  | 0.38734 |  0.39245  |
